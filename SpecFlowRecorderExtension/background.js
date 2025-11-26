@@ -5,6 +5,8 @@ let recordedActions = [];
 // Initialize storage
 chrome.storage.local.set({ isRecording: false, actionCount: 0 });
 
+console.log('SpecFlow Recorder Background Service v1.1 Loaded');
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === 'startRecording') {
         isRecording = true;
@@ -43,47 +45,72 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
         });
 
-        generateFiles();
+        // Retrieve actions from storage before generating
+        chrome.storage.local.get(['recordedActions', 'featureName'], (result) => {
+            const actions = result.recordedActions || [];
+            const featureName = result.featureName || 'MyFeature';
+            generateFiles(actions, featureName);
+        });
+
         sendResponse({ status: 'stopped' });
     }
     else if (request.command === 'recordAction') {
-        if (isRecording) {
-            recordedActions.push(request.action);
-            chrome.storage.local.set({ actionCount: recordedActions.length });
+        // We need to get the current list first to append
+        chrome.storage.local.get(['recordedActions', 'isRecording'], (result) => {
+            if (result.isRecording) {
+                const actions = result.recordedActions || [];
+                actions.push(request.action);
 
-            // Notify popup if open
-            chrome.runtime.sendMessage({
-                type: 'actionRecorded',
-                count: recordedActions.length
-            }).catch(() => { }); // Ignore error if popup is closed
-        }
+                chrome.storage.local.set({
+                    recordedActions: actions,
+                    actionCount: actions.length
+                });
+
+                // Notify popup if open
+                chrome.runtime.sendMessage({
+                    type: 'actionRecorded',
+                    count: actions.length
+                }).catch(() => { });
+            }
+        });
     }
 
     return true;
 });
 
-function generateFiles() {
-    const featureContent = generateFeatureFile(recordedActions, currentFeatureName);
-    const stepsContent = generateStepsFile(recordedActions, currentFeatureName);
+function generateFiles(actions, featureName) {
+    console.log('Generating files for', featureName, 'with', actions.length, 'actions');
 
-    // Download Feature File
-    const featureBlob = new Blob([featureContent], { type: 'text/plain' });
-    const featureUrl = URL.createObjectURL(featureBlob);
+    const featureContent = generateFeatureFile(actions, featureName);
+    const stepsContent = generateStepsFile(actions, featureName);
+
+    // Use Data URLs (Base64) which are more reliable in Service Workers than Blob URLs
+    const featureDataUrl = 'data:text/plain;base64,' + btoa(unescape(encodeURIComponent(featureContent)));
+    const stepsDataUrl = 'data:text/plain;base64,' + btoa(unescape(encodeURIComponent(stepsContent)));
 
     chrome.downloads.download({
-        url: featureUrl,
-        filename: `${currentFeatureName}.feature`,
+        url: featureDataUrl,
+        filename: `${featureName}.feature`,
         saveAs: true
-    }, () => {
-        // Download Steps File after the first one initiates
-        const stepsBlob = new Blob([stepsContent], { type: 'text/plain' });
-        const stepsUrl = URL.createObjectURL(stepsBlob);
+    }, (downloadId) => {
+        if (chrome.runtime.lastError) {
+            console.error('Feature download failed:', chrome.runtime.lastError);
+        } else {
+            console.log('Feature download started, ID:', downloadId);
 
-        chrome.downloads.download({
-            url: stepsUrl,
-            filename: `${currentFeatureName}Steps.cs`,
-            saveAs: true
-        });
+            // Download Steps File
+            chrome.downloads.download({
+                url: stepsDataUrl,
+                filename: `${featureName}Steps.cs`,
+                saveAs: true
+            }, (stepDownloadId) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Steps download failed:', chrome.runtime.lastError);
+                } else {
+                    console.log('Steps download started, ID:', stepDownloadId);
+                }
+            });
+        }
     });
 }
 
@@ -164,7 +191,23 @@ namespace SpecFlowTests.Steps
         [When(@"I click the element with (.*?) ""(.*?)""")]
         public void ClickElementWith(string selectorType, string selectorValue)
         {
-            var element = GetElement(selectorType, selectorValue);
+            var wait = new OpenQA.Selenium.Support.UI.WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            var element = wait.Until(d => {
+                var el = GetElement(selectorType, selectorValue);
+                // Special handling for checkboxes/radios that might be hidden by custom UI
+                if (el != null && !el.Displayed && el.TagName.ToLower() == "input" && 
+                   (el.GetAttribute("type") == "checkbox" || el.GetAttribute("type") == "radio"))
+                {
+                    return el;
+                }
+                return (el != null && el.Displayed && el.Enabled) ? el : null;
+            });
+
+            // Move to element to ensure it's interactable (handles hover-only buttons)
+            var actions = new OpenQA.Selenium.Interactions.Actions(_driver);
+            actions.MoveToElement(element).Perform();
+            Thread.Sleep(500);
+
             element.Click();
             Thread.Sleep(500);
         }
@@ -210,7 +253,7 @@ namespace SpecFlowTests.Steps
         private IWebElement GetElement(string selectorType, string selectorValue)
         {
             By by;
-            switch (selectorType.toLowerCase())
+            switch (selectorType.ToLower())
             {
                 case "id": by = By.Id(selectorValue); break;
                 case "cssselector": by = By.CssSelector(selectorValue); break;
