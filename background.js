@@ -6,7 +6,7 @@ let recordedActions = [];
 
 chrome.storage.local.set({ isRecording: false, actionCount: 0 });
 
-console.log('StepForge Background Service Loaded');
+console.log('Reqnroll Recorder Background Service Loaded');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === 'startRecording') {

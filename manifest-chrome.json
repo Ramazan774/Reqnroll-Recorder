@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "SpecFlow Recorder",
-    "version": "1.0",
-    "description": "Records user actions and generates SpecFlow feature and step definition files.",
+    "name": "Reqnroll Recorder",
+    "version": "1.0.0",
+    "description": "Automatically record browser interactions and generate Reqnroll BDD tests with Gherkin feature files and C# step definitions.",
     "permissions": [
         "activeTab",
         "scripting",

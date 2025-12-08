@@ -1,3 +1,4 @@
+if (typeof browser !== 'undefined') globalThis.chrome = browser;
 (function () {
     let isRecording = false;
 
@@ -307,10 +308,10 @@
         if (chrome.runtime?.id) {
             try {
                 chrome.runtime.sendMessage(message).catch(err => {
-                    console.log('SpecFlow Recorder: Could not send message (extension might be reloaded)', err);
+                    console.log('Reqnroll Recorder: Could not send message (extension might be reloaded)', err);
                 });
             } catch (e) {
-                console.log('SpecFlow Recorder: Extension context invalidated');
+                console.log('Reqnroll Recorder: Extension context invalidated');
             }
         }
     }
@@ -368,7 +369,7 @@
                     target.type !== 'search';
 
                 if (isSubmitClick) {
-                    console.log('SpecFlow: Checking for uncommitted input before click on', target.tagName);
+                    console.log('Reqnroll Recorder: Checking for uncommitted input before click on', target.tagName);
 
                     // Check the currently focused element
                     const activeElement = document.activeElement;
@@ -378,7 +379,7 @@
                         const currentValue = activeElement.value;
                         const lastValue = lastRecordedValues.get(activeElement);
 
-                        console.log('SpecFlow: Active input found:', {
+                        console.log('Reqnroll Recorder: Active input found:', {
                             value: currentValue,
                             lastRecorded: lastValue,
                             willRecord: currentValue && currentValue !== lastValue
@@ -387,7 +388,7 @@
                         if (currentValue && currentValue !== lastValue) {
                             const inputSelector = getBestSelector(activeElement);
                             if (inputSelector) {
-                                console.log('SpecFlow: Recording input value before click:', currentValue);
+                                console.log('Reqnroll Recorder: Recording input value before click:', currentValue);
                                 sendMessageSafe({
                                     command: 'recordAction',
                                     action: {
@@ -413,7 +414,7 @@
                         if (currentValue && currentValue !== lastValue && input !== activeElement) {
                             const inputSelector = getBestSelector(input);
                             if (inputSelector) {
-                                console.log('SpecFlow: Found uncommitted input field:', currentValue);
+                                console.log('Reqnroll Recorder: Found uncommitted input field:', currentValue);
                                 sendMessageSafe({
                                     command: 'recordAction',
                                     action: {
@@ -452,7 +453,7 @@
         document.addEventListener('keydown', handleEvent, { capture: true, passive: true });
         document.addEventListener('blur', handleEvent, { capture: true, passive: true });
         document.addEventListener('change', handleEvent, { capture: true, passive: true });
-        console.log('SpecFlow Recorder: Listeners attached');
+        console.log('Reqnroll Recorder: Listeners attached');
 
         sendMessageSafe({
             command: 'recordAction',
@@ -465,7 +466,7 @@
         document.removeEventListener('keydown', handleEvent, { capture: true });
         document.removeEventListener('blur', handleEvent, { capture: true });
         document.removeEventListener('change', handleEvent, { capture: true });
-        console.log('SpecFlow Recorder: Listeners removed');
+        console.log('Reqnroll Recorder: Listeners removed');
     }
 
 })();

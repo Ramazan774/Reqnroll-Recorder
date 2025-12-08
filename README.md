@@ -1,14 +1,14 @@
-# SpecFlow Recorder Chrome Extension
+# Reqnroll Recorder
 
-A powerful Chrome Extension that records your browser interactions and automatically generates production-ready **SpecFlow (Gherkin)** feature files and **Selenium C#** step definitions.
+A powerful Chrome Extension that records your browser interactions and automatically generates production-ready **Reqnroll (Gherkin)** feature files and **Selenium C#** step definitions.
 
 Features
 
-- ** Record & Playback**: Captures clicks, typing, navigation, and special keys (Enter).
-- ** Smart Selectors**: Automatically finds the best, most robust selector.
-- ** Auto-Generation**: Instantly creates `.feature` and `.cs` files ready for your test project.
-- ** Robust Code**: Generates C# code with built-in `WebDriverWait` and hover handling for stability.
-- ** Session Management**: Persists recording state even if you close the popup or reload the page.
+- **Record & Playback**: Captures clicks, typing, navigation, and special keys (Enter).
+- **Smart Selectors**: Automatically finds the best, most robust selector.
+- **Auto-Generation**: Instantly creates `.feature` and `.cs` files ready for your test project.
+- **Robust Code**: Generates C# code with built-in `WebDriverWait` and hover handling for stability.
+- **Session Management**: Persists recording state even if you close the popup or reload the page.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Features
 2.  Open Chrome and navigate to `chrome://extensions/`.
 3.  Enable Developer mode (top right).
 4.  Click Load unpacked.
-5.  Select the `SpecFlowRecorderExtension` folder from this project.
+5.  Select the `ReqnrollRecorderExtension` folder from this project.
 
 ## Usage Guide
 
@@ -26,21 +26,20 @@ Features
 4.  Two files will automatically download:
        `Login.feature`: The Gherkin scenarios.
        `LoginSteps.cs`: The C# automation code.
-5.  Drop these files into your SpecFlow project and run your tests!
+5.  Drop these files into your Reqnroll project and run your tests!
 
 ## Running the Generated Tests
 
-A compatible SpecFlow test project template is available (if you moved it) or can be created with:
+A compatible Reqnroll test project template is available (if you moved it) or can be created with:
 
 ```bash
-dotnet new specflow -n SpecFlowTests
+dotnet new reqnroll -n ReqnrollRecorderTests
 dotnet add package Selenium.WebDriver
-dotnet add package SpecFlow.Plus.LivingDocPlugin
 ```
 
 ## Tech Stack
 
 - Frontend: HTML5, CSS3, Vanilla JavaScript
 - Extension API: Chrome Extensions Manifest V3
-- Automation: Selenium WebDriver, SpecFlow (Gherkin)
+- Automation: Selenium WebDriver, Reqnroll (Gherkin)
 

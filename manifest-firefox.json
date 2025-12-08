@@ -1,19 +1,26 @@
 {
     "manifest_version": 3,
-    "name": "StepForge for Reqnroll",
+    "name": "Reqnroll Recorder",
     "version": "1.0.0",
-    "description": "Automatically record browser interactions and generate Reqnroll BDD tests. Where test steps are crafted.",
+    "description": "Automatically record browser interactions and generate Reqnroll BDD tests with Gherkin feature files and C# step definitions.",
     "permissions": [
         "activeTab",
         "scripting",
         "storage",
         "downloads"
     ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "reqnrollrecorder@gmail.com"
+        }
+    },
     "action": {
         "default_popup": "popup.html"
     },
     "background": {
-        "service_worker": "background.js"
+        "scripts": [
+            "background.js"
+        ]
     },
     "content_scripts": [
         {
